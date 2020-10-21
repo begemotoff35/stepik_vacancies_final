@@ -1,0 +1,11 @@
+{% extends "vacancies/base.html" %}
+{% load my_extras %}
+{% block content %}
+  <main class="container mt-3">
+    <section>
+      <h1 class="h1 text-center mx-auto mt-4 pt-5" style="font-size: 70px;"><strong>{% if current_specialty is None %}Все вакансии{% else %}{{ current_specialty.title }}{% endif %}</strong></h1>
+      <p class="text-center pt-1">{% vacancy_by_number vacancies|length %}</p>
+      {% include 'vacancies/base_card_vacancy.html' %}
+    </section>
+  </main>
+{% endblock content %}
