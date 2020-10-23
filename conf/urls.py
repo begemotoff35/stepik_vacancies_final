@@ -20,7 +20,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include
 
+from django.contrib.auth.views import LogoutView
+
 from vacancies.views import MainView, VacanciesView, VacancyView, CompanyView
+from vacancies.views import MyLoginView, MySignupView
 
 import debug_toolbar
 
@@ -32,7 +35,11 @@ urlpatterns = [
     path('vacancies/cat/<slug:speciality_code>/', VacanciesView.as_view(), name='vacancies_by_speciality'),
     # re_path(r'^vacancies/?(cat/(?P<speciality_code>\w+))?/$', VacanciesView.as_view()),
     path('vacancies/<int:vacancy_id>/', VacancyView.as_view(), name='vacancy_info'),
+    # path('vacancies/<int:vacancy_id>/send', VacancyViewSend.as_view(), name='vacancy_send'),
     path('companies/<int:company_id>/', CompanyView.as_view(), name='company_vacancies'),
+    path('login', MyLoginView.as_view(), name='login'),
+    path('register', MySignupView.as_view(), name='register'),
+    path('logout', LogoutView.as_view(), name='logout'),
 ]
 
 if settings.DEBUG:

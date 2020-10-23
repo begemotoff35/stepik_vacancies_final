@@ -136,3 +136,9 @@ INTERNAL_IPS = [
     '127.0.0.1',
     # ...
 ]
+
+# Включаем поддержку bootstrap4 для crispy forms во всем проекте:
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'

@@ -1,10 +1,15 @@
-from django.shortcuts import render
-from django.views.generic.base import TemplateView
+from django.shortcuts import render, redirect
 
 from django.db.models import Count
 from django.http import Http404
 
+from django.views.generic.base import TemplateView
+from django.views.generic import CreateView
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.forms import UserCreationForm
+
 from vacancies.models import Specialty, Company, Vacancy
+from vacancies.forms import LoginForm
 
 
 class MainView(TemplateView):
@@ -72,3 +77,36 @@ class CompanyView(TemplateView):
         context['title_left'] = 'Компания'
 
         return context
+
+
+class MyLoginView(LoginView):
+    template_name = "vacancies/login.html"
+    redirect_authenticated_user = False
+
+    def post(self, request, *args, **kwargs):
+        form = MyLoginView()
+        return redirect('/')
+
+
+class MySignupView(CreateView):
+    template_name = "vacancies/register.html"
+    form_class = UserCreationForm
+    success_url = 'login'
+    # redirect_authenticated_user = False
+
+
+"""def login_view(request):
+    if request.method == 'POST':
+        postcard_form = PostcardForm(request.POST)
+        if postcard_form.is_valid():
+            # какой то процессинг данных
+            data = postcard_form.cleaned_data
+            return HttpResponseRedirect('/thanks/')
+        else:
+            raise Http404
+    else:
+        postcard_form = PostcardForm()
+    return render(request, 'postcard.html', {'form': postcard_form})
+    return render(request, 'vacancies/login.html', {'form': LoginForm})
+"""
+
