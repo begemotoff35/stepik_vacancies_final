@@ -1,10 +1,13 @@
 from django.db import models
+from django.contrib.auth.models import User
+
+from conf.settings import MEDIA_COMPANY_IMAGE_DIR, MEDIA_SPECIALITY_IMAGE_DIR
 
 
 class Specialty(models.Model):
     code = models.SlugField(unique=True)
     title = models.CharField(max_length=100)
-    picture = models.CharField(max_length=255)
+    picture = models.ImageField(upload_to=MEDIA_SPECIALITY_IMAGE_DIR)
 
     def __str__(self):
         return f'{self.code}'
@@ -13,9 +16,10 @@ class Specialty(models.Model):
 class Company(models.Model):
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=100)
-    logo = models.CharField(max_length=255)
+    logo = models.ImageField(upload_to=MEDIA_COMPANY_IMAGE_DIR)
     description = models.TextField(max_length=200)
     employee_count = models.IntegerField()
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='companies', null=True)
 
     def __str__(self):
         return f'{self.name}'
@@ -33,3 +37,11 @@ class Vacancy(models.Model):
 
     def __str__(self):
         return f'{self.title} - {self.specialty} - {self.company}'
+
+
+class Application(models.Model):
+    written_username = models.CharField(max_length=100)
+    written_phone = models.CharField(max_length=15)
+    written_cover_letter = models.CharField(max_length=100)
+    vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
