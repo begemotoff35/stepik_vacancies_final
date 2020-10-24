@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 
 from django.db.models import Count
@@ -8,10 +9,11 @@ from django.urls import reverse
 from django.views.generic.base import TemplateView
 from django.views.generic import CreateView
 from django.contrib.auth.views import LoginView
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
 
+from conf import settings
+from vacancies.forms import MyRegisterForm
 from vacancies.models import Specialty, Company, Vacancy
-# from vacancies.forms import LoginForm
 
 
 class MainView(TemplateView):
@@ -103,35 +105,42 @@ class CompanyView(TemplateView):
 
 class MyLoginView(LoginView):
     template_name = "vacancies/login.html"
-    redirect_authenticated_user = False
+    # redirect_authenticated_user = False
     form_class = AuthenticationForm
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
         if form.is_valid():
             user = form.get_user()
-            if user is None:
-                return HttpResponse('Invalid login')
-            else:
+            if user is not None:
                 if user.is_active:
                     login(request, user)
-                    return HttpResponse('Authenticated successfully')
+                    return redirect(self.get_success_url())
                 else:
                     return HttpResponse('Disabled account')
-        return redirect(reverse('login'))
+        return render(request, self.template_name, {'form': form})
 
 
 class MySignupView(CreateView):
     template_name = "vacancies/register.html"
-    form_class = UserCreationForm
-    success_url = 'login'
+    form_class = MyRegisterForm
+    success_url = settings.LOGIN_REDIRECT_URL
+
     # redirect_authenticated_user = False
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
         if form.is_valid():
             data = form.cleaned_data
-        return redirect(reverse('register'))
-
-
-
+            username, password = data['username'], data['password1']
+            user = User.objects.filter(username=username, password=password).first()
+            if user is None:
+                # Создаём нового пользователя:
+                first_name, last_name, email = data['first_name'], data['last_name'], data['email']
+                user = User.objects.create_user(username=username, password=password,
+                                                first_name=first_name, last_name=last_name, email=email)
+                if user is not None:
+                    return redirect(self.success_url)
+            else:
+                return redirect(reverse('login'))
+        return render(request, self.template_name, {'form': form})

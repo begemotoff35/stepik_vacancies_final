@@ -3,23 +3,28 @@
 <div class=" form-label-group">
   <p class="text-muted">Имя</p>
   <input type="text" name="{{ form.first_name.html_name }}" class="form-control" required >
-  <label></label>{{ form.first_name.error_messages }}
+  <label></label>
 </div>
 
 <div class=" form-label-group">
   <p class="text-muted">Фамилия</p>
   <input type="text" name="{{ form.last_name.html_name }}" class="form-control" required >
-  <label></label>{{ form.last_name.error_messages }}
+  <label></label>
+</div>
+<div class=" form-label-group">
+  <p class="text-muted">Почта</p>
+  <input type="text" name="{{ form.email.html_name }}" class="form-control" required >
+  <label></label>
 </div>
 <div class="form-label-group">
   <p class="text-muted"> Пароль</p>
   <input type="password" name="{{ form.password1.html_name }}" class="form-control" required>
-  <label></label>{{ form.password1.error_messages }}
+  <label></label>
 </div>
 <div class="form-label-group">
   <p class="text-muted"> Подтверждение пароля</p>
   <input type="password" name="{{ form.password2.html_name }}" class="form-control" required>
-  <label></label>{{ form.password2.error_messages }}
+  <label></label>
 </div>
 {% endblock content %}
 
