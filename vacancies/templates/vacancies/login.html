@@ -3,7 +3,7 @@
 <div class="form-label-group">
   <p class="text-muted"> Пароль</p>
   <input type="password" name="{{ form.password.html_name }}" class="form-control" required>
-  <label></label>
+  <label></label>{{ form.password.error_messages }}
 </div>
 {% endblock content %}
 
