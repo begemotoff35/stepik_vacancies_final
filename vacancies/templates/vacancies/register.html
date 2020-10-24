@@ -2,16 +2,25 @@
 {% block content %}
 <div class=" form-label-group">
   <p class="text-muted">Имя</p>
-  <input type="text" id="inputName" class="form-control" required >
-  <label for="inputName"></label>
+  <input type="text" name="{{ form.first_name.html_name }}" class="form-control" required >
+  <label></label>
 </div>
 
 <div class=" form-label-group">
   <p class="text-muted">Фамилия</p>
-  <input type="text" id="inputSurname" class="form-control" required >
-  <label for="inputSurname"></label>
+  <input type="text" name="{{ form.last_name.html_name }}" class="form-control" required >
+  <label></label>
 </div>
-{% include 'vacancies/base_authentication_password.html' %}
+<div class="form-label-group">
+  <p class="text-muted"> Пароль</p>
+  <input type="password" name="{{ form.password1.html_name }}" class="form-control" required>
+  <label></label>
+</div>
+<div class="form-label-group">
+  <p class="text-muted"> Подтверждение пароля</p>
+  <input type="password" name="{{ form.password2.html_name }}" class="form-control" required>
+  <label></label>
+</div>
 {% endblock content %}
 
 

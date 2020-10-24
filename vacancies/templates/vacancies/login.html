@@ -1,6 +1,10 @@
 {% extends "vacancies/base_authentication.html" %}
 {% block content %}
-{% include 'vacancies/base_authentication_password.html' %}
+<div class="form-label-group">
+  <p class="text-muted"> Пароль</p>
+  <input type="password" name="{{ form.password.html_name }}" class="form-control" required>
+  <label></label>
+</div>
 {% endblock content %}
 
 

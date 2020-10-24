@@ -1,15 +1,17 @@
+from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 
 from django.db.models import Count
-from django.http import Http404
+from django.http import Http404, HttpResponse
+from django.urls import reverse
 
 from django.views.generic.base import TemplateView
 from django.views.generic import CreateView
 from django.contrib.auth.views import LoginView
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 from vacancies.models import Specialty, Company, Vacancy
-from vacancies.forms import LoginForm
+# from vacancies.forms import LoginForm
 
 
 class MainView(TemplateView):
@@ -79,13 +81,44 @@ class CompanyView(TemplateView):
         return context
 
 
+"""def user_login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            user = authenticate(request, username=data['username'], password=data['password'])
+            if user is None:
+                return HttpResponse('Invalid login')
+            else:
+                if user.is_active:
+                    login(request, user)
+                    return HttpResponse('Authenticated successfully')
+                else:
+                    return HttpResponse('Disabled account')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'vacancies/login.html', {'form': form})
+"""
+
+
 class MyLoginView(LoginView):
     template_name = "vacancies/login.html"
     redirect_authenticated_user = False
+    form_class = AuthenticationForm
 
     def post(self, request, *args, **kwargs):
-        form = MyLoginView()
-        return redirect('/')
+        form = self.get_form()
+        if form.is_valid():
+            user = form.get_user()
+            if user is None:
+                return HttpResponse('Invalid login')
+            else:
+                if user.is_active:
+                    login(request, user)
+                    return HttpResponse('Authenticated successfully')
+                else:
+                    return HttpResponse('Disabled account')
+        return redirect(reverse('login'))
 
 
 class MySignupView(CreateView):
@@ -94,19 +127,11 @@ class MySignupView(CreateView):
     success_url = 'login'
     # redirect_authenticated_user = False
 
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            data = form.cleaned_data
+        return redirect(reverse('register'))
 
-"""def login_view(request):
-    if request.method == 'POST':
-        postcard_form = PostcardForm(request.POST)
-        if postcard_form.is_valid():
-            # какой то процессинг данных
-            data = postcard_form.cleaned_data
-            return HttpResponseRedirect('/thanks/')
-        else:
-            raise Http404
-    else:
-        postcard_form = PostcardForm()
-    return render(request, 'postcard.html', {'form': postcard_form})
-    return render(request, 'vacancies/login.html', {'form': LoginForm})
-"""
+
 

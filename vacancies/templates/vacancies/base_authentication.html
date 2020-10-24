@@ -12,18 +12,25 @@
   <main class="container">
     <div class="row">
       <div class="col-8 col-lg-4 offset-2 offset-lg-4">
+        {% if "login" in request.path %}
         <form class="form-signin pt-5" action="{% url 'login' %}" method="post">
+        {% else %}
+        <form class="form-signin pt-5" action="{% url 'register' %}" method="post">
+        {% endif %}
           <div class="text-center mt-5 b-1">
             <h1 class="h3 mb-3 font-weight-normal">{{ title }}</h1>
             <p class="h5 font-weight-light">{% if "login" in request.path %} Войдите, чтобы управлять {% else %}Создайте аккаунт{% endif %}</p>
           </div>
           <div class="mt-5 form-label-group">
             <p class="text-muted">Логин</p>
-            <input type="text" id="inputLogin" class="form-control" required autofocus>
-            <label for="inputLogin"></label>
+            <input type="text" name={{ form.username.html_name }} class="form-control" required autofocus>
+            <label></label>
           </div>
           {% block content %}
           {% endblock %}
+{% for error in form.errors %}
+    <span class="error-message">{{ error }}</span>
+{% endfor %}
           <div class="checkbox mb-3"></div>
           {% csrf_token %}
 
