@@ -1,19 +1,19 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 
 from django.db.models import Count
 from django.http import Http404, HttpResponse
 from django.urls import reverse
 
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, View
 from django.views.generic import CreateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import AuthenticationForm
 
 from conf import settings
-from vacancies.forms import MyRegisterForm
-from vacancies.models import Specialty, Company, Vacancy
+from vacancies.forms import MyRegisterForm, ApplicationForm, CompanyForm
+from vacancies.models import Specialty, Company, Vacancy, Application
 
 
 class MainView(TemplateView):
@@ -51,6 +51,18 @@ class VacanciesView(TemplateView):
 class VacancyView(TemplateView):
     template_name = "vacancies/vacancy.html"
 
+    def post(self, request, vacancy_id):
+        vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+        form = ApplicationForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            Application.objects.create(written_username=data['written_username'],
+                                       written_phone=data['written_phone'],
+                                       written_cover_letter=data['written_cover_letter'],
+                                       vacancy=vacancy, user=request.user)
+            return redirect(reverse('vacancy_sent', kwargs={'vacancy_id': vacancy_id}))
+        return render(request, self.template_name, {'form': form, 'vacancy_id': vacancy_id, 'vacancy': vacancy})
+
     def get_context_data(self, vacancy_id, **kwargs):
         context = super(VacancyView, self).get_context_data(**kwargs)
         if vacancy_id is None:
@@ -64,12 +76,20 @@ class VacancyView(TemplateView):
         return context
 
 
+class VacancySent(TemplateView):
+    template_name = "vacancies/sent.html"
+
+    def get_context_data(self, vacancy_id, **kwargs):
+        context = super(VacancySent, self).get_context_data(**kwargs)
+        context['title_left'] = 'Отклик отправлен'
+        return context
+
+
 class CompanyView(TemplateView):
     template_name = "vacancies/company.html"
 
     def get_context_data(self, company_id, **kwargs):
         context = super(CompanyView, self).get_context_data(**kwargs)
-        # company_id = context.get('company_id', None)
         if company_id is None:
             raise Http404
 
@@ -83,24 +103,32 @@ class CompanyView(TemplateView):
         return context
 
 
-"""def user_login(request):
-    if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
+class UserCompanyView(View):
+    def get(self, request):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        if company is None:
+            company = Company.objects.create(owner=user,
+                                             employee_count=0)
+        template_name = 'company-create.html' if company is None else 'company-edit.html'
+        template_name = 'vacancies/' + template_name
+        return render(request, template_name, {'company': company, 'title_left': 'Моя компания'})
+
+    def post(self, request):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        form = CompanyForm(request.POST)
         if form.is_valid():
-            data = form.cleaned_data
-            user = authenticate(request, username=data['username'], password=data['password'])
-            if user is None:
-                return HttpResponse('Invalid login')
-            else:
-                if user.is_active:
-                    login(request, user)
-                    return HttpResponse('Authenticated successfully')
-                else:
-                    return HttpResponse('Disabled account')
-    else:
-        form = AuthenticationForm()
-    return render(request, 'vacancies/login.html', {'form': form})
-"""
+            if company is not None:
+                data = form.cleaned_data
+                company.name = data['name']
+                company.location = data['location']
+                # company.logo = data['logo']
+                company.description = data['description']
+                company.employee_count = data['employee_count']
+                company.save()
+            return redirect(reverse('user_company'))
+        return render(request, 'vacancies/company-edit.html', {'form': form, 'company': company})
 
 
 class MyLoginView(LoginView):
@@ -108,7 +136,7 @@ class MyLoginView(LoginView):
     # redirect_authenticated_user = False
     form_class = AuthenticationForm
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         form = self.get_form()
         if form.is_valid():
             user = form.get_user()
@@ -128,7 +156,7 @@ class MySignupView(CreateView):
 
     # redirect_authenticated_user = False
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         form = self.get_form()
         if form.is_valid():
             data = form.cleaned_data

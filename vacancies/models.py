@@ -2,6 +2,7 @@ from django.db import models
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from phonenumber_field.modelfields import PhoneNumberField
 
 from conf.settings import MEDIA_COMPANY_IMAGE_DIR, MEDIA_SPECIALITY_IMAGE_DIR
 
@@ -43,7 +44,7 @@ class Vacancy(models.Model):
 
 class Application(models.Model):
     written_username = models.CharField(max_length=100)
-    written_phone = models.CharField(max_length=15)
-    written_cover_letter = models.CharField(max_length=100)
+    written_phone = PhoneNumberField()
+    written_cover_letter = models.TextField()
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='applications')

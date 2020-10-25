@@ -5,7 +5,7 @@
         <div class="card-body px-4">
           <div class="row">
             <div class="col-12 col-md-8 col-lg-9">
-              <a href="{% url 'vacancy_info' vacancy.id %}">
+              <a href="{% url 'vacancy_info' vacancy_id=vacancy.id %}">
               <h2 class="h2 pb-2">{{ vacancy.title }}</h2>
               </a>
               <p class="mb-2">{{ vacancy.specialty.title }} • Junior • Python • Django • MySQL • Git</p>

@@ -45,22 +45,23 @@
               Опыт работы в команде по Scrum
             </p>
           </div>
-          <form action="/echo" class="card mt-4 mb-3">
+          <form action="{% url 'vacancy_info' vacancy.id %}" class="card mt-4 mb-3" method="post">{% csrf_token %}
             <div class="card-body mx-3">
               <p class="h5 mt-3 font-weight-normal">Отозваться на вакансию</p>
+              <p>{{ form.errors }}</p>
               <div class="form-group">
                 <label class="mb-1 mt-2" for="userName">Вас зовут</label>
-                <input class="form-control" type="text" placeholder="" id="userName">
+                <input class="form-control" type="text" placeholder="" id="userName" name="{{ form.written_username.html_name }}" value="{{ user.get_full_name }}">
               </div>
               <div class="form-group">
                 <label class="mb-1" for="userPhone">Ваш телефон</label>
-                <input class="form-control" type="tel" placeholder="" id="userPhone">
+                <input class="form-control" type="tel" placeholder="" id="userPhone" name="{{ form.written_phone.html_name }}">
               </div>
               <div class="form-group">
                 <label class="mb-1" for="userMsg" >Сопроводительное письмо</label>
-                <textarea class="form-control" rows="8" id="userMsg"></textarea>
+                <textarea class="form-control" rows="8" id="userMsg" name="{{ form.written_cover_letter.html_name }}"></textarea>
               </div>
-              <input type="submit" class="btn btn-primary mt-4 mb-2" value="Записаться на пробный урок">
+              <input type="submit" class="btn btn-primary mt-4 mb-2" value="Отозваться на вакансию">
             </div>
           </form>
         </section>
