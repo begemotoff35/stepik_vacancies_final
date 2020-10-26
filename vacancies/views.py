@@ -103,21 +103,35 @@ class CompanyView(TemplateView):
         return context
 
 
+def user_profile(request):
+    return render(request, 'vacancies/user-profile.html', {'personal_page': True})
+
+
+def create_user_company(request):
+    user = request.user
+    company = Company.objects.filter(owner=user).first()
+    if company is None:
+        company = Company.objects.create(name='Моя компания', location='', description='',
+                                         employee_count=0, owner=user)
+    return redirect(reverse('user_company'), kwargs={'personal_page': True})
+
+
 class UserCompanyView(View):
+    template_name = 'vacancies/company-edit.html'
+
     def get(self, request):
         user = self.request.user
         company = Company.objects.filter(owner=user).first()
-        if company is None:
-            company = Company.objects.create(owner=user,
-                                             employee_count=0)
-        template_name = 'company-create.html' if company is None else 'company-edit.html'
-        template_name = 'vacancies/' + template_name
-        return render(request, template_name, {'company': company, 'title_left': 'Моя компания'})
+        template_name = 'vacancies/company-create.html' if company is None else 'vacancies/company-edit.html'
+        return render(request, template_name,
+                      {'company': company, 'title_left': 'Моя компания', 'personal_page': True})
 
     def post(self, request):
         user = self.request.user
         company = Company.objects.filter(owner=user).first()
+        # company = get_object_or_404(Company, owner=user)
         form = CompanyForm(request.POST)
+        context = {'form': form, 'company': company, 'personal_page': True}
         if form.is_valid():
             if company is not None:
                 data = form.cleaned_data
@@ -127,14 +141,20 @@ class UserCompanyView(View):
                 company.description = data['description']
                 company.employee_count = data['employee_count']
                 company.save()
-            return redirect(reverse('user_company'))
-        return render(request, 'vacancies/company-edit.html', {'form': form, 'company': company})
+                context['company_info_updated'] = True
+        return render(request, self.template_name, context)
 
 
 class MyLoginView(LoginView):
     template_name = "vacancies/login.html"
-    # redirect_authenticated_user = False
     form_class = AuthenticationForm
+    # redirect_authenticated_user = False
+    success_url = 'user_company'
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect(reverse(self.success_url))
+        return super().get(request, *args, **kwargs)
 
     def post(self, request):
         form = self.get_form()
@@ -143,7 +163,7 @@ class MyLoginView(LoginView):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    return redirect(self.get_success_url())
+                    return redirect(reverse(self.success_url))
                 else:
                     return HttpResponse('Disabled account')
         return render(request, self.template_name, {'form': form})
@@ -152,9 +172,13 @@ class MyLoginView(LoginView):
 class MySignupView(CreateView):
     template_name = "vacancies/register.html"
     form_class = MyRegisterForm
-    success_url = settings.LOGIN_REDIRECT_URL
-
+    success_url = 'user_company'  # settings.LOGIN_REDIRECT_URL
     # redirect_authenticated_user = False
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect(reverse(self.success_url))
+        return super().get(request, *args, **kwargs)
 
     def post(self, request):
         form = self.get_form()
@@ -168,7 +192,5 @@ class MySignupView(CreateView):
                 user = User.objects.create_user(username=username, password=password,
                                                 first_name=first_name, last_name=last_name, email=email)
                 if user is not None:
-                    return redirect(self.success_url)
-            else:
-                return redirect(reverse('login'))
+                    return redirect(reverse(self.success_url))
         return render(request, self.template_name, {'form': form})

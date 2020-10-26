@@ -6,7 +6,7 @@
   <title>{% if title_left|length > 0 %}{{ title_left }} | {% endif %}{{ title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  {% if user.is_authenticated %}
+  {% if personal_page %}
   <style>
     body {
       background-color: #F6F2E6;
@@ -37,7 +37,7 @@
                 {{ user.get_full_name|default:user.username }}
               </button>
               <div class="dropdown-menu dropdown-menu-right mt-3">
-                <a href="#" class="dropdown-item py-2">Профиль</a>
+                <a href="{% url 'user_profile' %}" class="dropdown-item py-2">Профиль</a>
                 <a href="#" class="dropdown-item py-2">Резюме</a>
                 <a href="{% url 'user_company' %}" class="dropdown-item py-2">Компания</a>
                 <a href="{% url 'logout' %}" class="dropdown-item py-2">Выйти</a>
