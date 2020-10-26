@@ -1,11 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
-from django.contrib.auth.models import User
-
-# from crispy_forms.helper import FormHelper
-# from crispy_forms.layout import Submit
-from vacancies.models import Application, Company
+from vacancies.models import Application, Company, Vacancy
 
 
 class MyRegisterForm(UserCreationForm):
@@ -21,6 +17,14 @@ class ApplicationForm(forms.ModelForm):
 
 
 class CompanyForm(forms.ModelForm):
+    employee_count = forms.IntegerField(required=False, min_value=0)
+
     class Meta:
         model = Company
         fields = ['name', 'location', 'description', 'employee_count']
+
+
+class VacancyEditForm(forms.ModelForm):
+    class Meta:
+        model = Vacancy
+        fields = ['title', 'specialty', 'skills', 'description', 'salary_min', 'salary_max']

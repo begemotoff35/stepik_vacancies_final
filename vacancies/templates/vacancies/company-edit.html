@@ -7,7 +7,7 @@
           <h1 class="h4 pt-2 pb-2">Моя компания</h1>
           <div class="nav flex-column nav-pills">
             <a class="nav-link active" href="#">1. Информация о&nbsp;компании</a>
-            <a class="nav-link" href="#">2. Вакансии</a>
+            <a class="nav-link" href="{% url 'user_company_vacancies' %}">2. Вакансии</a>
           </div>
         </aside>
         <div>{{ form.errors }}</div>
@@ -54,7 +54,7 @@
                   <div class="col-12 col-md-6">
                     <div class="form-group pb-2">
                       <label class="mb-2 text-dark" for="companyTeam">Количество человек в компании</label>
-                      <input class="form-control" type="text" value="{{ company.employee_count }}" id="companyTeam" name="{{ form.employee_count.html_name }}">
+                      <input class="form-control" type="number" min="0" value="{{ company.employee_count }}" id="companyTeam" name="{{ form.employee_count.html_name }}">
                     </div>
                   </div>
                   <div class="col-12 col-md-6">

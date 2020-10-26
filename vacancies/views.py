@@ -1,5 +1,6 @@
 from django.contrib.auth import login
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.shortcuts import render, redirect, get_object_or_404
 
 from django.db.models import Count
@@ -11,8 +12,7 @@ from django.views.generic import CreateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import AuthenticationForm
 
-from conf import settings
-from vacancies.forms import MyRegisterForm, ApplicationForm, CompanyForm
+from vacancies.forms import MyRegisterForm, ApplicationForm, CompanyForm, VacancyEditForm
 from vacancies.models import Specialty, Company, Vacancy, Application
 
 
@@ -70,6 +70,7 @@ class VacancyView(TemplateView):
 
         vacancy = Vacancy.objects.get(id=vacancy_id)
 
+        context['form'] = ApplicationForm()
         context['vacancy'] = vacancy
         context['title_left'] = 'Вакансия'
 
@@ -107,46 +108,108 @@ def user_profile(request):
     return render(request, 'vacancies/user-profile.html', {'personal_page': True})
 
 
+def create_user_key(user_id, s):
+    return f'user_{user_id}_{s}'
+
+
 def create_user_company(request):
     user = request.user
     company = Company.objects.filter(owner=user).first()
     if company is None:
-        company = Company.objects.create(name='Моя компания', location='', description='',
-                                         employee_count=0, owner=user)
-    return redirect(reverse('user_company'), kwargs={'personal_page': True})
+        # company = Company.objects.create(owner=user, name='Моя компания',
+        #                                 location='', description='', employee_count=0)
+        # Создаём временный объект и помещаем его в кэш (не знаю, как передать данные в UserCompanyView):
+        company = Company(owner=user, name='')
+        cache.set(create_user_key(user.id, 'company'), company)
+    return redirect(reverse('user_company'), kwargs={'company': company})  # kwargs не передаются почему-то...
 
 
 class UserCompanyView(View):
-    template_name = 'vacancies/company-edit.html'
-
-    def get(self, request):
+    def get(self, request, **kwargs):
         user = self.request.user
         company = Company.objects.filter(owner=user).first()
+        if company is None:
+            company = cache.get(create_user_key(user.id, 'company'))
+
         template_name = 'vacancies/company-create.html' if company is None else 'vacancies/company-edit.html'
         return render(request, template_name,
-                      {'company': company, 'title_left': 'Моя компания', 'personal_page': True})
+                      {'form': CompanyForm(), 'company': company, 'title_left': 'Моя компания'})
 
     def post(self, request):
+        user = request.user
+        company = Company.objects.filter(owner=user).first()
+        if company is None:
+            company = Company()
+        form = CompanyForm(request.POST)
+        context = {'form': form, 'company': company}
+        if form.is_valid() and company is not None:
+            data = form.cleaned_data
+            company.name = data['name']
+            company.location = data['location']
+            # company.logo = data['logo']
+            company.description = data['description']
+            company.employee_count = data['employee_count']
+            company.save()
+            context['company_info_updated'] = True
+            # Удаляем данные из кэша:
+            key = create_user_key(user.id, 'company')
+            if cache.get(key) is not None:
+                cache.delete(key)
+        return render(request, 'vacancies/company-edit.html', context)
+
+
+class UserCompanyVacanciesView(TemplateView):
+    template_name = 'vacancies/vacancy-list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(UserCompanyVacanciesView, self).get_context_data(**kwargs)
+
         user = self.request.user
         company = Company.objects.filter(owner=user).first()
-        # company = get_object_or_404(Company, owner=user)
-        form = CompanyForm(request.POST)
-        context = {'form': form, 'company': company, 'personal_page': True}
-        if form.is_valid():
-            if company is not None:
-                data = form.cleaned_data
-                company.name = data['name']
-                company.location = data['location']
-                # company.logo = data['logo']
-                company.description = data['description']
-                company.employee_count = data['employee_count']
-                company.save()
-                context['company_info_updated'] = True
-        return render(request, self.template_name, context)
+        if company is None:
+            raise Http404
+
+        # Находим все вакансии по компании:
+        vacancies = Vacancy.objects.filter(company=company).all()
+        context['company'] = company
+        context['vacancies'] = vacancies
+        context['title_left'] = 'Моя компания | Вакансии'
+
+        return context
+
+
+def create_user_vacancy(request):
+    user = request.user
+    # company = get_object_or_404(Company, owner=user)
+    company = Company.objects.filter(owner=user).first()
+    vacancy = Vacancy(company=company)
+    # vacancies_with_application_count = Vacancy.objects.annotate(count=Count('applications'))
+    # responses_count =
+    return render(request, 'vacancies/vacancy-edit.html',
+                  {'form': VacancyEditForm(), 'vacancy': vacancy, 'title_left': 'Моя компания | Вакансия'})
+
+
+class UserCompanyVacancyCreateView(View):
+    def get(self, request):
+        user = request.user
+        company = Company.objects.filter(owner=user).first()
+        if company is None:
+            company = cache.get(create_user_key(user.id, 'company'))
+
+        vacancies = Vacancy.objects.filter(company=company).all()
+        vacancy = Vacancy()
+
+        template_name = 'vacancies/vacancy-list.html' if company is None else 'vacancies/vacancy-edit.html'
+        return render(request, template_name,
+                      {'form': CompanyForm(), 'company': company, 'vacancy': vacancy, 'title_left': 'Моя компания | Вакансия'})
+
+
+class UserCompanyVacancyEditView(TemplateView):
+    template_name = 'vacancies/vacancy-edit.html'
 
 
 class MyLoginView(LoginView):
-    template_name = "vacancies/login.html"
+    template_name = 'vacancies/login.html'
     form_class = AuthenticationForm
     # redirect_authenticated_user = False
     success_url = 'user_company'
@@ -163,6 +226,10 @@ class MyLoginView(LoginView):
             if user is not None:
                 if user.is_active:
                     login(request, user)
+
+                    # Предварительно чистим кэш:
+                    cache.delete(create_user_key(request.user.id, 'company'))
+
                     return redirect(reverse(self.success_url))
                 else:
                     return HttpResponse('Disabled account')
@@ -172,7 +239,8 @@ class MyLoginView(LoginView):
 class MySignupView(CreateView):
     template_name = "vacancies/register.html"
     form_class = MyRegisterForm
-    success_url = 'user_company'  # settings.LOGIN_REDIRECT_URL
+    success_url = 'login'  # settings.LOGIN_REDIRECT_URL
+
     # redirect_authenticated_user = False
 
     def get(self, request, *args, **kwargs):
