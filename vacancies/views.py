@@ -108,39 +108,34 @@ def user_profile(request):
     return render(request, 'vacancies/user-profile.html', {'personal_page': True})
 
 
-def create_user_key(user_id, s):
-    return f'user_{user_id}_{s}'
+# def create_user_key(user_id, s):
+#    return f'user_{user_id}_{s}'
 
 
 def create_user_company(request):
     user = request.user
     company = Company.objects.filter(owner=user).first()
     if company is None:
-        # company = Company.objects.create(owner=user, name='Моя компания',
-        #                                 location='', description='', employee_count=0)
-        # Создаём временный объект и помещаем его в кэш (не знаю, как передать данные в UserCompanyView):
+        # Создаём временный объект:
         company = Company(owner=user, name='')
-        cache.set(create_user_key(user.id, 'company'), company)
-    return redirect(reverse('user_company'), kwargs={'company': company})  # kwargs не передаются почему-то...
+    return render(request, 'vacancies/company-edit.html',
+                  {'form': CompanyForm(), 'company': company, 'title_left': 'Моя компания'})
 
 
 class UserCompanyView(View):
-    def get(self, request, **kwargs):
+    def get(self, request):
         user = self.request.user
         company = Company.objects.filter(owner=user).first()
-        if company is None:
-            company = cache.get(create_user_key(user.id, 'company'))
-
         template_name = 'vacancies/company-create.html' if company is None else 'vacancies/company-edit.html'
-        return render(request, template_name,
+        return render(self.request, template_name,
                       {'form': CompanyForm(), 'company': company, 'title_left': 'Моя компания'})
 
     def post(self, request):
-        user = request.user
+        user = self.request.user
         company = Company.objects.filter(owner=user).first()
         if company is None:
             company = Company()
-        form = CompanyForm(request.POST)
+        form = CompanyForm(self.request.POST)
         context = {'form': form, 'company': company}
         if form.is_valid() and company is not None:
             data = form.cleaned_data
@@ -149,13 +144,10 @@ class UserCompanyView(View):
             # company.logo = data['logo']
             company.description = data['description']
             company.employee_count = data['employee_count']
+            company.owner = user
             company.save()
             context['company_info_updated'] = True
-            # Удаляем данные из кэша:
-            key = create_user_key(user.id, 'company')
-            if cache.get(key) is not None:
-                cache.delete(key)
-        return render(request, 'vacancies/company-edit.html', context)
+        return render(self.request, 'vacancies/company-edit.html', context)
 
 
 class UserCompanyVacanciesView(TemplateView):
@@ -189,21 +181,6 @@ def create_user_vacancy(request):
                   {'form': VacancyEditForm(), 'vacancy': vacancy, 'title_left': 'Моя компания | Вакансия'})
 
 
-class UserCompanyVacancyCreateView(View):
-    def get(self, request):
-        user = request.user
-        company = Company.objects.filter(owner=user).first()
-        if company is None:
-            company = cache.get(create_user_key(user.id, 'company'))
-
-        vacancies = Vacancy.objects.filter(company=company).all()
-        vacancy = Vacancy()
-
-        template_name = 'vacancies/vacancy-list.html' if company is None else 'vacancies/vacancy-edit.html'
-        return render(request, template_name,
-                      {'form': CompanyForm(), 'company': company, 'vacancy': vacancy, 'title_left': 'Моя компания | Вакансия'})
-
-
 class UserCompanyVacancyEditView(TemplateView):
     template_name = 'vacancies/vacancy-edit.html'
 
@@ -226,10 +203,6 @@ class MyLoginView(LoginView):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-
-                    # Предварительно чистим кэш:
-                    cache.delete(create_user_key(request.user.id, 'company'))
-
                     return redirect(reverse(self.success_url))
                 else:
                     return HttpResponse('Disabled account')

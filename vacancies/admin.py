@@ -3,12 +3,12 @@ from .models import Specialty, Company, Vacancy
 
 
 class SpecialtyAdmin(admin.ModelAdmin):
-    fields = ('code', 'title', 'picture')
-    # readonly_fields = ('code', 'title', 'picture')
+    list_display = ('code', 'id', 'title', 'picture')
     pass
 
 
 class CompanyAdmin(admin.ModelAdmin):
+    list_display = ('name', 'id', 'location', 'logo', 'owner')
     pass
 
 
