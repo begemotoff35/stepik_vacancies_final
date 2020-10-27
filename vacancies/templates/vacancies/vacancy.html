@@ -9,12 +9,12 @@
       </div>
       <div class="col-12 col-lg-8">
         <section class="pl-3">
-          <a href="{% url 'company_vacancies' vacancy.company.id %}"><img src="{% if vacancy.company.logo %}{{ vacancy.company.logo.url }}{% endif %}}" width="130" height="80" alt="{{ vacancy.company.name }}"></a>
+          <a href="{% url 'company_vacancies' vacancy.company.id %}"><img src="{% if vacancy.company.logo %}{{ vacancy.company.logo.url }}{% endif %} " width="130" height="80" alt="{{ vacancy.company.name }}"></a>
           <div class="d-flex align-items-baseline align-content-baseline">
             <h1 class="h2 mt-4 font-weight-bold" >{{ vacancy.title }}</h1>
             <p class="m-0 pl-3">{{ vacancy.salary_min|floatformat }} – {{ vacancy.salary_max|floatformat }} Р</p>
           </div>
-          <p class="mt-2">{{ vacancy.specialty.title }} • Средний (Middle) • PHP • PostgreSQL • MySQL • Node.js • Laravel • Symfony • Yii framework • Sails.js • Rabbitmq • Kafka</p>
+          <p class="mt-2">{{ vacancy.specialty.title }} {{ vacancy.scills }}</p>
           <p class="text-muted mb-4">{{ vacancy.company.name }} ({{ vacancy.company.employee_count }} человек), {{ vacancy.company.location }} или удаленно</p>
           <div style="line-height: 1.8;">
             <p>{{ vacancy.description }}</p>

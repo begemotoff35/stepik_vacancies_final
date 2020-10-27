@@ -30,7 +30,7 @@
                       <a href="{% url 'vacancy_info' vacancy.id %}" class="mb-1 h5">{{ vacancy.title }}</a>
                       <p class="my-1">{{ vacancy.specialty.title }} • Junior • Python • Django • MySQL • Git</p>
                       <div class="my-1">
-                        <span class="mr-4">{{ vacancy.salary_min|floatformat }} -  {{ vacancy.salary_max|floatformat }} руб.</span><a href="#" class="text-info">N отклика</a>
+                        <span class="mr-4">{{ vacancy.salary_min|floatformat }} -  {{ vacancy.salary_max|floatformat }} руб.</span><a href="#" class="text-info">{{ vacancy.number_of_responses }} отклика</a>
                         <div class="text-muted pt-1 small">{{ vacancy.published_at|date:"d b Y" }}</div>
                       </div>
 

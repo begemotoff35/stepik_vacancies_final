@@ -11,29 +11,32 @@
             <a class="nav-link active" href="#">2. Вакансии</a>
           </div>
         </aside>
+        <div>{{ form.errors }}</div>
       </div>
       <div class="col-12 col-lg-8">
         <div class="card">
           <div class="card-body px-4 pb-4 tab-content">
             <!-- Tab -->
             <section>
-              <h2 class="h4 pt-2 pb-3">Backend Middle/Senior</h2>
+              <h2 class="h4 pt-2 pb-3">{{ vacancy.title|default:"Новая вакансия" }}</h2>
+              {% if info_updated %}
               <p class="alert alert-info" role="alert">Вакансия обновлена</p>
-              <form action="/echo">
+              {% endif %}
+              <form action="{% url 'user_company_vacancy_edit' vacancy.id|default_if_none:0 %}">
                 <div class="row">
                   <div class="col-12 col-md-6">
                     <div class="form-group pb-2">
                       <label class="mb-2 text-dark" for="vacancyTitle">Название вакансии</label>
-                      <input class="form-control" type="text" value="Staffing Smarter" id="vacancyTitle">
+                      <input class="form-control" type="text" value="{{ vacancy.title }}" name="{{ form.title.html_name }}" id="vacancyTitle">
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="form-group pb-2">
                       <label class="mb-2 text-dark" for="userSpecialization">Специализация</label>
-                      <select class="custom-select mr-sm-2" id="userSpecialization">
-                        <option selected>Backend разработка</option>
-                        <option value="1">Frontend разработка</option>
-                        <option value="2">Project manager</option>
+                      <select class="custom-select mr-sm-2" id="userSpecialization" name="{{ form.specialty.html_name }}">
+                        {% for specialty in specialties %}
+                        <option value="{{ specialty.code }}">{{ specialty.title }}</option>
+                        {% endfor %}
                       </select>
                     </div>
                   </div>
@@ -42,33 +45,23 @@
                   <div class="col-12 col-md-6">
                     <div class="form-group pb-2">
                       <label class="mb-2 text-dark" for="vacancySalaryMin">Зарплата от</label>
-                      <input class="form-control" type="text" value="90 000" id="vacancySalaryMin">
+                      <input class="form-control" type="number" min="0" value="{{ vacancy.salary_min }}" id="vacancySalaryMin" name="{{ form.salary_min.html_name }}">
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="form-group pb-2">
                       <label class="mb-2" for="vacancySalaryMax">Зарплата до</label>
-                      <input class="form-control" type="text" value="90 000" id="vacancySalaryMax">
+                      <input class="form-control" type="number" min="0" value="{{ vacancy.salary_max }}" id="vacancySalaryMax" name="{{ form.salary_max.html_name }}">
                     </div>
                   </div>
                 </div>
                 <div class="form-group pb-2">
                   <label class="mb-2 text-dark" for="vacancySkills">Требуемые навыки</label>
-                  <textarea class="form-control" rows="3" id="vacancySkills" style="color:#000;">Бэкенд • Средний (Middle) • PHP • PostgreSQL • MySQL • Node.js • Laravel • Symfony • Yii framework • Sails.js • Rabbitmq • Kafka</textarea>
+                  <textarea class="form-control" rows="3" id="vacancySkills" style="color:#000;" name="{{ form.skills.html_name }}">{{ vacancy.skills }}</textarea>
                 </div>
                 <div class="form-group pb-2">
                   <label class="mb-2 text-dark" for="vacancyDescription">Описание вакансии</label>
-                  <textarea class="form-control" rows="13" id="vacancyDescription" style="color:#000;">Финтех компания входит в международную группу  и занимается развитием факторингового бизнеса. В связи с расширением штата, мы хотим усилить нашу команду Backend-разработчиком, для работы над улучшением продуктов компании.
-
-Мы предлагаем:
-Оформление по ТК РФ
-ДМС со стоматологией
-Достойную зарплату, уровень которой можно обсудить по телефону с рекрутером
-Гибкое начало дня, отдельные дни удаленной работы обсуждаются
-Современный офис
-Демократичную корпоративную культуру
-Работу в команде по Scrum
-                  </textarea>
+                  <textarea class="form-control" rows="13" id="vacancyDescription" style="color:#000;" name="{{ form.description.html_name }}">{{ vacancy.description }}</textarea>
                 </div>
                 <div class="form-group">
                   <input type="submit" class="btn btn-info" value="Сохранить">
@@ -76,7 +69,7 @@
               </form>
               <!-- END Vacancy info -->
               <!-- Applications -->
-              <h2 class="h4 pt-2 pb-3">Отклики - 2</h2>
+              <h2 class="h4 pt-2 pb-3">{% if company.number_of_responses %}Отклики - {{ company.number_of_responses }}{% endif %}</h2>
               <!-- Application 1 -->
               <div class="card mt-3">
                 <div class="card-body px-4">

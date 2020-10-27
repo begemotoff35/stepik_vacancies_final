@@ -146,7 +146,7 @@ class UserCompanyView(View):
             company.employee_count = data['employee_count']
             company.owner = user
             company.save()
-            context['company_info_updated'] = True
+            context['info_updated'] = True
         return render(self.request, 'vacancies/company-edit.html', context)
 
 
@@ -162,9 +162,10 @@ class UserCompanyVacanciesView(TemplateView):
             raise Http404
 
         # Находим все вакансии по компании:
-        vacancies = Vacancy.objects.filter(company=company).all()
+        vacancies_with_number_of_responses = \
+            Vacancy.objects.filter(company=company).annotate(number_of_responses=Count('applications'))
         context['company'] = company
-        context['vacancies'] = vacancies
+        context['vacancies'] = vacancies_with_number_of_responses
         context['title_left'] = 'Моя компания | Вакансии'
 
         return context
@@ -174,15 +175,33 @@ def create_user_vacancy(request):
     user = request.user
     # company = get_object_or_404(Company, owner=user)
     company = Company.objects.filter(owner=user).first()
-    vacancy = Vacancy(company=company)
-    # vacancies_with_application_count = Vacancy.objects.annotate(count=Count('applications'))
-    # responses_count =
+    vacancy = Vacancy(company=company)  # 0, т.к. временный объект
+    specialties = Specialty.objects.all()
     return render(request, 'vacancies/vacancy-edit.html',
-                  {'form': VacancyEditForm(), 'vacancy': vacancy, 'title_left': 'Моя компания | Вакансия'})
+                  {'form': VacancyEditForm(),
+                   'vacancy': vacancy,
+                   'company': company,
+                   'specialties': specialties,
+                   'title_left': 'Моя компания | Вакансия'})
 
 
 class UserCompanyVacancyEditView(TemplateView):
     template_name = 'vacancies/vacancy-edit.html'
+
+    def get(self, request, vacancy_id):
+        # company = Company.objects.filter(owner=user).first()
+        company = Vacancy.objects.annotate(number_of_responses=Count('vacancies')).first()
+        vacancy = Vacancy.objects.filter(id=vacancy_id).first()
+        if vacancy is None:
+            vacancy = Vacancy(company=company)
+        specialties = Specialty.objects.all()
+
+        return render(request, self.template_name,
+                      {'form': VacancyEditForm(),
+                       'vacancy': vacancy,
+                       'company': company,
+                       'specialties': specialties,
+                       'title_left': 'Моя компания | Вакансия'})
 
 
 class MyLoginView(LoginView):
