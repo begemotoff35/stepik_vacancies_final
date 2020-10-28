@@ -4,7 +4,7 @@ from django.core.cache import cache
 from django.shortcuts import render, redirect, get_object_or_404
 
 from django.db.models import Count
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseServerError
 from django.urls import reverse
 
 from django.views.generic.base import TemplateView, View
@@ -137,7 +137,7 @@ class UserCompanyView(View):
             company = Company()
         form = CompanyForm(self.request.POST)
         context = {'form': form, 'company': company}
-        if form.is_valid() and company is not None:
+        if form.is_valid():
             data = form.cleaned_data
             company.name = data['name']
             company.location = data['location']
@@ -175,6 +175,8 @@ def create_user_vacancy(request):
     user = request.user
     # company = get_object_or_404(Company, owner=user)
     company = Company.objects.filter(owner=user).first()
+    if company is None:
+        raise Http404
     vacancy = Vacancy(company=company)  # 0, т.к. временный объект
     specialties = Specialty.objects.all()
     return render(request, 'vacancies/vacancy-edit.html',
@@ -189,11 +191,11 @@ class UserCompanyVacancyEditView(TemplateView):
     template_name = 'vacancies/vacancy-edit.html'
 
     def get(self, request, vacancy_id):
-        # company = Company.objects.filter(owner=user).first()
-        company = Vacancy.objects.annotate(number_of_responses=Count('vacancies')).first()
-        vacancy = Vacancy.objects.filter(id=vacancy_id).first()
+        user = request.user
+        company = get_object_or_404(Company, owner=user)
+        vacancy = Vacancy.objects.filter(id=vacancy_id).annotate(number_of_responses=Count('applications')).first()
         if vacancy is None:
-            vacancy = Vacancy(company=company)
+            vacancy = Vacancy(company=company, specialty=None)
         specialties = Specialty.objects.all()
 
         return render(request, self.template_name,
@@ -201,7 +203,33 @@ class UserCompanyVacancyEditView(TemplateView):
                        'vacancy': vacancy,
                        'company': company,
                        'specialties': specialties,
+                       # 'vacancy_specialty': vacancy.specialty,
                        'title_left': 'Моя компания | Вакансия'})
+
+    def post(self, request, vacancy_id):
+        user = request.user
+        company = get_object_or_404(Company, owner=user)
+        vacancy = Vacancy.objects.filter(id=vacancy_id).annotate(number_of_responses=Count('applications')).first()
+        if vacancy is None:
+            vacancy = Vacancy(company=company)
+        specialties = Specialty.objects.all()
+        form = VacancyEditForm(request.POST)
+        context = {'form': form, 'company': company,
+                   'vacancy': vacancy, 'specialties': specialties,
+                   'title_left': 'Моя компания | Вакансия'}
+        if form.is_valid():
+            data = form.cleaned_data
+            vacancy.title = data['title']
+            vacancy.specialty = data['specialty']
+            vacancy.company = company
+            vacancy.salary_min = data['salary_min']
+            vacancy.salary_max = data['salary_max']
+            vacancy.skills = data['skills']
+            vacancy.description = data['description']
+            vacancy.save()
+            context['vacancy_specialty'] = data['specialty']
+            context['info_updated'] = True
+        return render(request, 'vacancies/vacancy-edit.html', context)
 
 
 class MyLoginView(LoginView):

@@ -22,7 +22,7 @@
               {% if info_updated %}
               <p class="alert alert-info" role="alert">Вакансия обновлена</p>
               {% endif %}
-              <form action="{% url 'user_company_vacancy_edit' vacancy.id|default_if_none:0 %}">
+              <form action="{% url 'user_company_vacancy_edit' vacancy.id|default_if_none:0 %}", method="post">{% csrf_token %}
                 <div class="row">
                   <div class="col-12 col-md-6">
                     <div class="form-group pb-2">
@@ -35,7 +35,7 @@
                       <label class="mb-2 text-dark" for="userSpecialization">Специализация</label>
                       <select class="custom-select mr-sm-2" id="userSpecialization" name="{{ form.specialty.html_name }}">
                         {% for specialty in specialties %}
-                        <option value="{{ specialty.code }}">{{ specialty.title }}</option>
+                        <option value="{{ specialty.code }}"}>{{ specialty.title }}</option>
                         {% endfor %}
                       </select>
                     </div>
