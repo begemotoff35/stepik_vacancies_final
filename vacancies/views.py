@@ -196,14 +196,24 @@ class UserCompanyVacancyEditView(TemplateView):
         vacancy = Vacancy.objects.filter(id=vacancy_id).annotate(number_of_responses=Count('applications')).first()
         if vacancy is None:
             vacancy = Vacancy(company=company, specialty=None)
-        specialties = Specialty.objects.all()
+        applications = Application.objects.filter(vacancy=vacancy).all()
 
+        form = VacancyEditForm({'title': vacancy.title,
+                                'skills': vacancy.skills,
+                                # не знаю, как передать specialty в crispy form (что-то не так с чойсами)
+                                # возникает ошибка ValueError
+                                # Exception Value:
+                                # Cannot assign "'backend'": "Vacancy.specialty" must be a "Specialty" instance.
+                                # 'specialty': vacancy.specialty,
+                                'description': vacancy.description,
+                                'salary_min': vacancy.salary_min,
+                                'salary_max': vacancy.salary_max,
+                                })
         return render(request, self.template_name,
-                      {'form': VacancyEditForm(),
+                      {'form': form,
                        'vacancy': vacancy,
                        'company': company,
-                       'specialties': specialties,
-                       # 'vacancy_specialty': vacancy.specialty,
+                       'applications': applications,
                        'title_left': 'Моя компания | Вакансия'})
 
     def post(self, request, vacancy_id):
@@ -212,23 +222,24 @@ class UserCompanyVacancyEditView(TemplateView):
         vacancy = Vacancy.objects.filter(id=vacancy_id).annotate(number_of_responses=Count('applications')).first()
         if vacancy is None:
             vacancy = Vacancy(company=company)
-        specialties = Specialty.objects.all()
+        applications = Application.objects.filter(vacancy=vacancy).all()
         form = VacancyEditForm(request.POST)
-        context = {'form': form, 'company': company,
-                   'vacancy': vacancy, 'specialties': specialties,
+        context = {'form': form, 'company': company, 'vacancy': vacancy, 'applications': applications,
                    'title_left': 'Моя компания | Вакансия'}
         if form.is_valid():
             data = form.cleaned_data
             vacancy.title = data['title']
-            vacancy.specialty = data['specialty']
-            vacancy.company = company
-            vacancy.salary_min = data['salary_min']
-            vacancy.salary_max = data['salary_max']
-            vacancy.skills = data['skills']
-            vacancy.description = data['description']
-            vacancy.save()
-            context['vacancy_specialty'] = data['specialty']
-            context['info_updated'] = True
+            specialty = Specialty.objects.filter(code=data['specialty']).first()
+            if specialty is not None:
+                vacancy.specialty = specialty
+                vacancy.company = company
+                vacancy.salary_min = data['salary_min']
+                vacancy.salary_max = data['salary_max']
+                vacancy.skills = data['skills']
+                vacancy.description = data['description']
+                vacancy.save()
+                context['vacancy_specialty'] = data['specialty']
+                context['info_updated'] = True
         return render(request, 'vacancies/vacancy-edit.html', context)
 
 

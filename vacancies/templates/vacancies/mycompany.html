@@ -1,0 +1,17 @@
+  <main class="container mt-3 pb-5">
+    <div class="row mt-5">
+      {% if show_navbar %}{% include 'vacancies/mycompany_navbar.html' %}{% endif %}
+      <div class="col-12 col-lg-8 mt-5">
+        <div class="card">
+          <div class="card-body px-4 pb-4">
+            <!-- Tab -->
+            <section class="tab-pane fade show active">
+              {% block mycompany_card %}
+              {% endblock %}
+            </section>
+            <!-- END Tab -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>

@@ -1,16 +1,9 @@
 {% extends "vacancies/base.html" %}
+{% load my_extras %}
 {% block content %}
   <main class="container mt-3 pb-5">
     <div class="row mt-5">
-      <div class="col-12 col-lg-4 mt-5">
-        <aside class="pt-3 pb-4 px-4 mb-5 card">
-          <h1 class="h4 pt-2 pb-2">Моя компания</h1>
-          <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-            <a class="nav-link" href="{% url 'user_company' %}">1. Информация о&nbsp;компании</a>
-            <a class="nav-link active" href="#">2. Вакансии</a>
-          </div>
-        </aside>
-      </div>
+      {% include 'vacancies/mycompany_navbar.html' %}
       <div class="col-12 col-lg-8 mt-5">
         <div class="card">
           <div class="card-body px-4 pb-4">
@@ -28,15 +21,15 @@
                   <div class="row align-items-center">
                     <div class="col-6 col-lg-8">
                       <a href="{% url 'vacancy_info' vacancy.id %}" class="mb-1 h5">{{ vacancy.title }}</a>
-                      <p class="my-1">{{ vacancy.specialty.title }} • Junior • Python • Django • MySQL • Git</p>
+                      <p class="my-1">{{ vacancy.specialty.title }} • {{ vacancy.specialty.skills }}</p>
                       <div class="my-1">
-                        <span class="mr-4">{{ vacancy.salary_min|floatformat }} -  {{ vacancy.salary_max|floatformat }} руб.</span><a href="#" class="text-info">{{ vacancy.number_of_responses }} отклика</a>
+                        <span class="mr-4">{{ vacancy.salary_min|floatformat }} -  {{ vacancy.salary_max|floatformat }} руб.</span><a href="#" class="text-info">{% response_by_number vacancy.number_of_responses %}</a>
                         <div class="text-muted pt-1 small">{{ vacancy.published_at|date:"d b Y" }}</div>
                       </div>
 
                     </div>
                     <div class="col-6 col-lg-4 text-right">
-                      <a href="#" class="btn btn-outline-info">Изменить</a>
+                      <a href="{% url 'user_company_vacancy_edit' vacancy.id %}" class="btn btn-outline-info">Изменить</a>
                     </div>
                   </div>
                 </div>

@@ -8,6 +8,15 @@ from conf.settings import MEDIA_COMPANY_IMAGE_DIR, MEDIA_SPECIALITY_IMAGE_DIR
 
 
 class Specialty(models.Model):
+    FRONTEND = 'frontend'
+    BACKEND = 'backend'
+    GAMEDEV = 'gamedev'
+    DEVOPS = 'devops'
+    DESIGN = 'design'
+    PRODUCTS = 'products'
+    MANAGEMENT = 'management'
+    TESTING = 'testing'
+
     code = models.SlugField(unique=True)
     title = models.CharField(max_length=100)
     picture = models.ImageField(upload_to=MEDIA_SPECIALITY_IMAGE_DIR)
@@ -33,10 +42,10 @@ class Vacancy(models.Model):
     title = models.CharField(max_length=100)
     specialty = models.ForeignKey(Specialty, on_delete=models.CASCADE, related_name='vacancies')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='vacancies')
-    skills = models.CharField(max_length=100)
-    description = models.TextField(max_length=200)
-    salary_min = models.DecimalField(decimal_places=2, max_digits=15)
-    salary_max = models.DecimalField(decimal_places=2, max_digits=15)
+    skills = models.CharField(max_length=100, blank=True)
+    description = models.TextField(max_length=200, blank=True)
+    salary_min = models.DecimalField(decimal_places=2, max_digits=15, blank=True)
+    salary_max = models.DecimalField(decimal_places=2, max_digits=15, blank=True)
     published_at = models.DateField(auto_now=True)
 
     def __str__(self):

@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'phonenumber_field',
     'crispy_forms',
     'debug_toolbar',
-    'vacancies'
+    'vacancies',
 ]
 
 MIDDLEWARE = [
