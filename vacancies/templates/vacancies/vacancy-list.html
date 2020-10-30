@@ -9,7 +9,11 @@
 
 {% block mycompany_card %}
   <h2 class="h4 pt-2 pb-3">Вакансии</h2>
-  {% if not vacancies %}
+  {% if not company %}
+    <div class="alert alert-warning" role="alert">
+      Сначала <a href="{% url 'user_company_create' %}" class="alert-link">необходимо создать</a> свою компанию!
+    </div>
+  {% elif not vacancies %}
     <div class="alert alert-info" role="alert">
       У вас пока нет вакансий, но вы можете <a href="{% url 'user_company_vacancy_create' %}" class="alert-link">создать первую</a>!
     </div>
@@ -21,7 +25,7 @@
           <div class="row align-items-center">
             <div class="col-6 col-lg-8">
               <a href="{% url 'vacancy_info' vacancy.id %}" class="mb-1 h5">{{ vacancy.title }}</a>
-              <p class="my-1">{{ vacancy.specialty.title }} • {{ vacancy.specialty.skills }}</p>
+              <p class="my-1">{{ vacancy.specialty.title }}{% if vacancy.skills %} • {{ vacancy.skills }}{% endif %}</p>
               <div class="my-1">
                 <span class="mr-4">{{ vacancy.salary_min|floatformat }} -  {{ vacancy.salary_max|floatformat }} руб.</span><a href="#" class="text-info">{% response_by_number vacancy.number_of_responses %}</a>
                 <div class="text-muted pt-1 small">{{ vacancy.published_at|date:"d b Y" }}</div>

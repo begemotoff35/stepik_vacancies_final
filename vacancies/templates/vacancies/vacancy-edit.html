@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block mycompany_card %}
-  <h2 class="h4 pt-2 pb-3">{{ vacancy.title|default:"Новая вакансия" }}</h2>
+  <h2 class="h4 pt-2 pb-3">{% if vacancy.id > 0 %}Вакансия #{{vacancy.id}}{% else %}Новая вакансия{% endif %}</h2>
   {% if info_updated %}
     <p class="alert alert-info" role="alert">Вакансия обновлена</p>
   {% endif %}

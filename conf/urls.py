@@ -44,6 +44,8 @@ urlpatterns = [
     path('mycompany/vacancies/create', views.create_user_vacancy, name='user_company_vacancy_create'),
     path('mycompany/vacancies/<int:vacancy_id>/', views.UserCompanyVacancyEditView.as_view(),
          name='user_company_vacancy_edit'),
+    path('mycompany/resume', views.UserCompanyResumeEditView.as_view(), name='user_resume'),
+    path('mycompany/resume/create', views.create_user_resume, name='user_resume_create'),
     path('login', views.MyLoginView.as_view(), name='login'),
     path('register', views.MySignupView.as_view(), name='register'),
     path('logout', LogoutView.as_view(), {'next_page': settings.LOGOUT_REDIRECT_URL}, name='logout'),

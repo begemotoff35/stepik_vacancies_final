@@ -8,12 +8,12 @@ from django.http import Http404, HttpResponse, HttpResponseServerError
 from django.urls import reverse
 
 from django.views.generic.base import TemplateView, View
-from django.views.generic import CreateView
+from django.views.generic import CreateView, UpdateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import AuthenticationForm
 
-from vacancies.forms import MyRegisterForm, ApplicationForm, CompanyForm, VacancyEditForm
-from vacancies.models import Specialty, Company, Vacancy, Application
+from vacancies.forms import MyRegisterForm, ApplicationForm, CompanyForm, VacancyEditForm, ResumeEditForm
+from vacancies.models import Specialty, Company, Vacancy, Application, Resume
 
 
 class MainView(TemplateView):
@@ -91,10 +91,8 @@ class CompanyView(TemplateView):
 
     def get_context_data(self, company_id, **kwargs):
         context = super(CompanyView, self).get_context_data(**kwargs)
-        if company_id is None:
-            raise Http404
 
-        company = Company.objects.get(id=company_id)
+        company = get_object_or_404(Company, id=company_id)
         vacancies = Vacancy.objects.filter(company_id=company_id)
 
         context['company'] = company
@@ -102,6 +100,14 @@ class CompanyView(TemplateView):
         context['title_left'] = 'Компания'
 
         return context
+
+
+def get_user_or_login(request):
+    user = request.user
+    if user.is_anonymous:
+        return redirect(reverse('login'))
+    else:
+        return user
 
 
 def user_profile(request):
@@ -114,6 +120,9 @@ def user_profile(request):
 
 def create_user_company(request):
     user = request.user
+    if user.is_anonymous:
+        return redirect(reverse('login'))
+
     company = Company.objects.filter(owner=user).first()
     if company is None:
         # Создаём временный объект:
@@ -124,14 +133,20 @@ def create_user_company(request):
 
 class UserCompanyView(View):
     def get(self, request):
-        user = self.request.user
+        user = request.user
+        if user.is_anonymous:
+            return redirect(reverse('login'))
+
         company = Company.objects.filter(owner=user).first()
         template_name = 'vacancies/company-create.html' if company is None else 'vacancies/company-edit.html'
         return render(self.request, template_name,
                       {'form': CompanyForm(), 'company': company, 'title_left': 'Моя компания'})
 
     def post(self, request):
-        user = self.request.user
+        user = request.user
+        if user.is_anonymous:
+            return redirect(reverse('login'))
+
         company = Company.objects.filter(owner=user).first()
         if company is None:
             company = Company()
@@ -162,9 +177,13 @@ class UserCompanyVacanciesView(TemplateView):
         context = super(UserCompanyVacanciesView, self).get_context_data(**kwargs)
 
         user = self.request.user
+        if user.is_anonymous:
+            return redirect(reverse('login'))
+
         company = Company.objects.filter(owner=user).first()
-        if company is None:
-            raise Http404
+        # if company is None:
+        #    raise Http404
+        # Сообщаем пользователю, что необходимо создать компанию.
 
         # Находим все вакансии по компании:
         vacancies_with_number_of_responses = \
@@ -178,17 +197,18 @@ class UserCompanyVacanciesView(TemplateView):
 
 def create_user_vacancy(request):
     user = request.user
+    if user.is_anonymous:
+        return redirect(reverse('login'))
+
     # company = get_object_or_404(Company, owner=user)
     company = Company.objects.filter(owner=user).first()
     if company is None:
         raise Http404
-    vacancy = Vacancy(company=company)  # 0, т.к. временный объект
-    specialties = Specialty.objects.all()
+    vacancy = Vacancy(company=company)
     return render(request, 'vacancies/vacancy-edit.html',
                   {'form': VacancyEditForm(),
                    'vacancy': vacancy,
                    'company': company,
-                   'specialties': specialties,
                    'title_left': 'Моя компания | Вакансия'})
 
 
@@ -197,6 +217,9 @@ class UserCompanyVacancyEditView(TemplateView):
 
     def get(self, request, vacancy_id):
         user = request.user
+        if user.is_anonymous:
+            return redirect(reverse('login'))
+
         company = get_object_or_404(Company, owner=user)
         vacancy = Vacancy.objects.filter(id=vacancy_id).annotate(number_of_responses=Count('applications')).first()
         if vacancy is None:
@@ -213,6 +236,8 @@ class UserCompanyVacancyEditView(TemplateView):
                                 # Exception Value:
                                 # Cannot assign "'backend'": "Vacancy.specialty" must be a "Specialty" instance.
                                 # 'specialty': vacancy.specialty,
+                                # поэтому создаём свой элемент в форме и используем его
+                                'form_specialty': str(vacancy.specialty),
                                 'description': vacancy.description,
                                 'salary_min': vacancy.salary_min,
                                 'salary_max': vacancy.salary_max,
@@ -226,6 +251,9 @@ class UserCompanyVacancyEditView(TemplateView):
 
     def post(self, request, vacancy_id):
         user = request.user
+        if user.is_anonymous:
+            return redirect(reverse('login'))
+
         company = get_object_or_404(Company, owner=user)
         vacancy = Vacancy.objects.filter(id=vacancy_id).annotate(number_of_responses=Count('applications')).first()
         if vacancy is None:
@@ -237,7 +265,7 @@ class UserCompanyVacancyEditView(TemplateView):
         if form.is_valid():
             data = form.cleaned_data
             vacancy.title = data['title']
-            specialty = Specialty.objects.filter(code=data['specialty']).first()
+            specialty = Specialty.objects.filter(code=data['form_specialty']).first()
             if specialty is not None:
                 vacancy.specialty = specialty
                 vacancy.company = company
@@ -251,6 +279,77 @@ class UserCompanyVacancyEditView(TemplateView):
         return render(request, 'vacancies/vacancy-edit.html', context)
 
 
+def create_user_resume(request):
+    user = request.user
+    if user.is_anonymous:
+        return redirect(reverse('login'))
+
+    company = get_object_or_404(Company, owner=user)
+
+    resume = Resume(user=user)
+    return render(request, 'vacancies/resume-edit.html',
+                  {'form': ResumeEditForm(),
+                   'resume': resume,
+                   'company': company,
+                   'title_left': 'Моя компания | Резюме',
+                   })
+
+
+class UserCompanyResumeEditView(TemplateView):
+    template_name = 'vacancies/resume-edit.html'
+
+    def get(self, request):
+        user = request.user
+        if user.is_anonymous:
+            return redirect(reverse('login'))
+
+        company = Company.objects.filter(owner=user).first()
+        resume = Resume.objects.filter(user=user).first()
+        template_name = 'vacancies/resume-create.html' if resume is None else self.template_name
+        form_data = {'name': resume.name, 'surname': resume.surname,
+                     'salary': resume.salary, 'status': resume.status, 'grade': resume.grade,
+                     'education': resume.education, 'experience': resume.experience,
+                     'portfolio': resume.portfolio,
+                     'form_specialty': str(resume.specialty),
+                     }
+        return render(self.request, template_name,
+                      {'form': ResumeEditForm(form_data),
+                       'company': company,
+                       'resume': resume,
+                       'title_left': 'Моя компания | Резюме',
+                       })
+
+    def post(self, request):
+        user = request.user
+        if user.is_anonymous:
+            return redirect(reverse('login'))
+
+        company = get_object_or_404(Company, owner=user)
+        resume = Resume.objects.filter(user=user).first()
+        if resume is None:
+            resume = Resume(user=user)
+        form = ResumeEditForm(request.POST)
+        context = {'form': form, 'company': company, 'resume': resume}
+        if form.is_valid():
+            data = form.cleaned_data
+            resume.name = data['name']
+            resume.surname = data['surname']
+            resume.salary = data['salary']
+            resume.status = data['status']
+            resume.grade = data['grade']
+            resume.education = data['education']
+            resume.experience = data['experience']
+            resume.portfolio = data['portfolio']
+            resume.specialty = Specialty.objects.filter(code=data['form_specialty']).first()
+            resume.user = user
+            resume.save()
+            context['info_updated'] = True
+        return render(request, self.template_name, context)
+
+
+#
+# Авторизация пользователей
+#
 class MyLoginView(LoginView):
     template_name = 'vacancies/login.html'
     form_class = AuthenticationForm

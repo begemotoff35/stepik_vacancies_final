@@ -1,0 +1,10 @@
+{% extends "vacancies/base_mycompany.html" %}
+
+{% block mycompany_card %}
+  <div class="card-body px-3 pb-4">
+    <h1 class="h4 pt-2">Моё резюме</h1>
+    <div class="alert alert-info" role="alert">
+      У вас нет резюме. Хотите <a href="{% url 'user_resume_create' %}" class="alert-link">создать его</a>?
+    </div>
+  </div>
+{% endblock mycompany_card %}
