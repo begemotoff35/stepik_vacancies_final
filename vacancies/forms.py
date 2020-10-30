@@ -26,7 +26,9 @@ class CompanyForm(forms.ModelForm):
 
     class Meta:
         model = Company
-        fields = ['name', 'location', 'description', 'employee_count']
+        fields = ['name', 'location', 'description', 'employee_count', 'logo']
+
+    logo = forms.ImageField(required=False)
 
 
 class VacancyEditForm(forms.ModelForm):
@@ -36,6 +38,7 @@ class VacancyEditForm(forms.ModelForm):
 
     class Specialties:
         choices = [
+            ('', '--- Выберите специализацию ---'),
             (Specialty.FRONTEND, 'Фронтенд разработка'),
             (Specialty.BACKEND, 'Бэкенд разработка'),
             (Specialty.GAMEDEV, 'Разработка игр'),
@@ -76,4 +79,4 @@ class VacancyEditForm(forms.ModelForm):
         self.fields['salary_min'].label = 'Зарплата от'
         self.fields['salary_max'].label = 'Зарплата до'
 
-        self.fields['specialty'].initial = Specialty.BACKEND
+        # self.fields['specialty'].initial = Specialty.BACKEND

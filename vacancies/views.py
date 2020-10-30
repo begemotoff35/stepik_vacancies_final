@@ -1,6 +1,6 @@
 from django.contrib.auth import login
 from django.contrib.auth.models import User
-from django.core.cache import cache
+
 from django.shortcuts import render, redirect, get_object_or_404
 
 from django.db.models import Count
@@ -135,13 +135,18 @@ class UserCompanyView(View):
         company = Company.objects.filter(owner=user).first()
         if company is None:
             company = Company()
-        form = CompanyForm(self.request.POST)
+        form = CompanyForm(request.POST)
         context = {'form': form, 'company': company}
         if form.is_valid():
             data = form.cleaned_data
             company.name = data['name']
             company.location = data['location']
+            # Не знаю, как надо загружать logo
+            # в request.POST данные есть, а в cleaned_data - нет
             # company.logo = data['logo']
+            #
+            # file_name = request.POST.get('logo')
+            # company.logo.storage.save(file_name)
             company.description = data['description']
             company.employee_count = data['employee_count']
             company.owner = user
@@ -198,6 +203,9 @@ class UserCompanyVacancyEditView(TemplateView):
             vacancy = Vacancy(company=company, specialty=None)
         applications = Application.objects.filter(vacancy=vacancy).all()
 
+        # Вот тут я не понимаю, почему в методе get класса UserCompanyView
+        #  я передаю пустую форму и в ней все поля заполнены в соответствии с моделью,
+        #  а здесь форма получается пустая и приходится явно инициализировать:
         form = VacancyEditForm({'title': vacancy.title,
                                 'skills': vacancy.skills,
                                 # не знаю, как передать specialty в crispy form (что-то не так с чойсами)

@@ -1,6 +1,9 @@
-  <main class="container mt-3 pb-5">
+{% extends "vacancies/base.html" %}
+{% block content %}
+ <main class="container mt-5 pb-5">
     <div class="row mt-5">
-      {% if show_navbar %}{% include 'vacancies/mycompany_navbar.html' %}{% endif %}
+      {% block mycompany_navbar %}
+      {% endblock %}
       <div class="col-12 col-lg-8 mt-5">
         <div class="card">
           <div class="card-body px-4 pb-4">
@@ -15,3 +18,4 @@
       </div>
     </div>
   </main>
+{% endblock content%}

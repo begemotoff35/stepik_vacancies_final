@@ -1,75 +1,63 @@
-{% extends "vacancies/base.html" %}
-{% block content %}
- <main class="container mt-3 pb-5">
-    <div class="row mt-5">
-      {% include 'vacancies/mycompany_navbar.html' %}
-      <div class="col-12 col-lg-8 mt-5">
-        <div class="card">
-          <div class="card-body px-4 pb-4">
-            <!-- Tab -->
-            <section class="tab-pane fade show active">
+{% extends "vacancies/base_mycompany.html" %}
 
+{% block mycompany_navbar %}
+  {% include 'vacancies/mycompany_navbar.html' %}
+{% endblock %}
 
-              <h2 class="h4 pt-2 pb-3">Информация о&nbsp;компании</h2>
-              {% if info_updated %}
-              <p class="alert alert-info" role="alert">
-                Информация о компании обновлена
-              </p>
-              {% endif %}
-              <form action="{% url 'user_company' %}" method="post">{% csrf_token %}
-                <div class="row">
-                  <div class="col-12 col-md-6">
-                    <div class="form-group pb-2">
-                      <label class="mb-2 text-dark" for="companyName">Название компании</label>
-                      <input class="form-control" type="text" value="{{ company.name }}" id="companyName" name="{{ form.name.html_name }}" placeholder="Моя компания">
-                    </div>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <div class="form-group">
-                      <label class="mb-2 text-dark" for="companyLogo">Логотип</label>
-                      <div class="row align-items-center">
-                        <div class="col-6">
-                          <img src="{% if company.logo %}{{ company.logo.url }}{% endif %}" alt="{{ company.name }}" style="max-width: 120px;height: auto;">
-                        </div>
-                        <div class="col-6" style="position: relative;">
-                          <div class="input-group-prepend" style="position: absolute; top: 0;right: 15px;">
-                            <span class="btn btn-info px-4">Загрузить</span>
-                          </div>
-                          <div class="custom-file" style="">
-                            <input type="file" class="custom-file-input" id="inputGroupFile01">
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-12 col-md-6">
-                    <div class="form-group pb-2">
-                      <label class="mb-2 text-dark" for="companyTeam">Количество человек в компании</label>
-                      <input class="form-control" type="number" min="0" value="{{ company.employee_count }}" id="companyTeam" name="{{ form.employee_count.html_name }}">
-                    </div>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <div class="form-group pb-2">
-                      <label class="mb-2 text-dark" for="companyLocation">География</label>
-                      <input class="form-control" type="text" value="{{ company.location }}" id="companyLocation" name="{{ form.location.html_name }}"placeholder="Укажите город">
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group pb-2">
-                  <label class="mb-2 text-dark" for="companyInfo">Информация о&nbsp;компании</label>
-                  <textarea class="form-control" rows="4" id="companyInfo" style="color:#000;" name="{{ form.description.html_name }}">{{ company.description }}</textarea>
-                </div>
-                <div class="form-group">
-                  <input type="submit" class="btn btn-info" value="Сохранить">
-                </div>
-              </form>
-            </section>
-            <!-- END Tab -->
+{% block mycompany_card %}
+  <h2 class="h4 pt-2 pb-3">Информация о&nbsp;компании</h2>
+  {% if info_updated %}
+  <p class="alert alert-info" role="alert">
+    Информация о компании обновлена
+  </p>
+  {% endif %}
+  <form action="{% url 'user_company' %}" method="post">{% csrf_token %}
+    <div class="row">
+      <div class="col-12 col-md-6">
+        <div class="form-group pb-2">
+          <label class="mb-2 text-dark" for="companyName">Название компании</label>
+          <input class="form-control" type="text" value="{{ company.name }}" id="companyName" name="{{ form.name.html_name }}" placeholder="Моя компания">
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="form-group">
+          <label class="mb-2 text-dark" for="companyLogo">Логотип</label>
+          <div class="row align-items-center">
+            <div class="col-6">
+              <img src="{% if company.logo %}{{ company.logo.url }}{% endif %}" alt="{{ company.logo }}">
+            </div>
+            <div class="col-6" style="position: relative;">
+              <div class="input-group-prepend" style="position: absolute; top: 0;right: 15px;">
+                <span class="btn btn-info px-4">Загрузить</span>
+              </div>
+              <div class="custom-file" style="">
+                <input type="file" class="custom-file-input" id="companyLogo" name="{{ form.logo.html_name }}">
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </main>
-{% endblock content %}
+    <div class="row">
+      <div class="col-12 col-md-6">
+        <div class="form-group pb-2">
+          <label class="mb-2 text-dark" for="companyTeam">Количество человек в компании</label>
+          <input class="form-control" type="number" min="0" value="{{ company.employee_count }}" id="companyTeam" name="{{ form.employee_count.html_name }}">
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="form-group pb-2">
+          <label class="mb-2 text-dark" for="companyLocation">География</label>
+          <input class="form-control" type="text" value="{{ company.location }}" id="companyLocation" name="{{ form.location.html_name }}"placeholder="Укажите город">
+        </div>
+      </div>
+    </div>
+    <div class="form-group pb-2">
+      <label class="mb-2 text-dark" for="companyInfo">Информация о&nbsp;компании</label>
+      <textarea class="form-control" rows="4" id="companyInfo" style="color:#000;" name="{{ form.description.html_name }}">{{ company.description }}</textarea>
+    </div>
+    <div class="form-group">
+      <input type="submit" class="btn btn-info" value="Сохранить">
+    </div>
+  </form>
+{% endblock mycompany_card %}

@@ -1,46 +1,39 @@
-{% extends "vacancies/base.html" %}
+{% extends "vacancies/base_mycompany.html" %}
 {% load my_extras %}
-{% block content %}
-  <main class="container mt-3 pb-5">
-    <div class="row mt-5">
-      {% include 'vacancies/mycompany_navbar.html' %}
-      <div class="col-12 col-lg-8 mt-5">
-        <div class="card">
-          <div class="card-body px-4 pb-4">
-            <section class="tab-pane fade show active">
-              <h2 class="h4 pt-2 pb-3">Вакансии</h2>
-              {% if not vacancies %}
-              <div class="alert alert-info" role="alert">
-                У вас пока нет вакансий, но вы можете <a href="{% url 'user_company_vacancy_create' %}" class="alert-link">создать первую</a>!
-              </div>
-              {% else %}
-              <!-- vacancy state 1 -->
-              {% for vacancy in vacancies %}
-              <div class="card mt-3">
-                <div class="card-body px-4">
-                  <div class="row align-items-center">
-                    <div class="col-6 col-lg-8">
-                      <a href="{% url 'vacancy_info' vacancy.id %}" class="mb-1 h5">{{ vacancy.title }}</a>
-                      <p class="my-1">{{ vacancy.specialty.title }} • {{ vacancy.specialty.skills }}</p>
-                      <div class="my-1">
-                        <span class="mr-4">{{ vacancy.salary_min|floatformat }} -  {{ vacancy.salary_max|floatformat }} руб.</span><a href="#" class="text-info">{% response_by_number vacancy.number_of_responses %}</a>
-                        <div class="text-muted pt-1 small">{{ vacancy.published_at|date:"d b Y" }}</div>
-                      </div>
 
-                    </div>
-                    <div class="col-6 col-lg-4 text-right">
-                      <a href="{% url 'user_company_vacancy_edit' vacancy.id %}" class="btn btn-outline-info">Изменить</a>
-                    </div>
-                  </div>
-                </div>
+{% block mycompany_navbar %}
+  {% if vacancies %}
+    {% include 'vacancies/mycompany_navbar.html' %}
+  {% endif %}
+{% endblock %}
+
+{% block mycompany_card %}
+  <h2 class="h4 pt-2 pb-3">Вакансии</h2>
+  {% if not vacancies %}
+    <div class="alert alert-info" role="alert">
+      У вас пока нет вакансий, но вы можете <a href="{% url 'user_company_vacancy_create' %}" class="alert-link">создать первую</a>!
+    </div>
+  {% else %}
+    <!-- vacancy state 1 -->
+    {% for vacancy in vacancies %}
+      <div class="card mt-3">
+        <div class="card-body px-4">
+          <div class="row align-items-center">
+            <div class="col-6 col-lg-8">
+              <a href="{% url 'vacancy_info' vacancy.id %}" class="mb-1 h5">{{ vacancy.title }}</a>
+              <p class="my-1">{{ vacancy.specialty.title }} • {{ vacancy.specialty.skills }}</p>
+              <div class="my-1">
+                <span class="mr-4">{{ vacancy.salary_min|floatformat }} -  {{ vacancy.salary_max|floatformat }} руб.</span><a href="#" class="text-info">{% response_by_number vacancy.number_of_responses %}</a>
+                <div class="text-muted pt-1 small">{{ vacancy.published_at|date:"d b Y" }}</div>
               </div>
-              {% endfor %}
-              <!-- END vacancy state 1 -->
-              {% endif %}
-            </section>
+            </div>
+            <div class="col-6 col-lg-4 text-right">
+              <a href="{% url 'user_company_vacancy_edit' vacancy.id %}" class="btn btn-outline-info">Изменить</a>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </main>
-{% endblock content %}
+    {% endfor %}
+    <!-- END vacancy state 1 -->
+  {% endif %}
+{% endblock mycompany_card %}
