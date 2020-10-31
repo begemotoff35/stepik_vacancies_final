@@ -12,7 +12,7 @@ from django.views.generic import CreateView, UpdateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import AuthenticationForm
 
-from vacancies.forms import MyRegisterForm, ApplicationForm, CompanyForm, VacancyEditForm, ResumeEditForm
+from vacancies.forms import MyRegisterForm, ApplicationForm, CompanyForm, VacancyEditForm, ResumeEditForm, SearchForm
 from vacancies.models import Specialty, Company, Vacancy, Application, Resume
 
 
@@ -226,12 +226,8 @@ class UserCompanyVacancyEditView(TemplateView):
             vacancy = Vacancy(company=company, specialty=None)
         applications = Application.objects.filter(vacancy=vacancy).all()
 
-        # Вот тут я не понимаю, почему в методе get класса UserCompanyView
-        #  я передаю пустую форму и в ней все поля заполнены в соответствии с моделью,
-        #  а здесь форма получается пустая и приходится явно инициализировать:
         form = VacancyEditForm({'title': vacancy.title,
                                 'skills': vacancy.skills,
-                                # не знаю, как передать specialty в crispy form (что-то не так с чойсами)
                                 # возникает ошибка ValueError
                                 # Exception Value:
                                 # Cannot assign "'backend'": "Vacancy.specialty" must be a "Specialty" instance.
@@ -291,11 +287,11 @@ def create_user_resume(request):
                   {'form': ResumeEditForm(),
                    'resume': resume,
                    'company': company,
-                   'title_left': 'Моя компания | Резюме',
+                   'title_left': 'Резюме',
                    })
 
 
-class UserCompanyResumeEditView(TemplateView):
+class UserResumeEditView(TemplateView):
     template_name = 'vacancies/resume-edit.html'
 
     def get(self, request):
@@ -316,7 +312,7 @@ class UserCompanyResumeEditView(TemplateView):
                       {'form': ResumeEditForm(form_data),
                        'company': company,
                        'resume': resume,
-                       'title_left': 'Моя компания | Резюме',
+                       'title_left': 'Резюме',
                        })
 
     def post(self, request):
@@ -345,6 +341,17 @@ class UserCompanyResumeEditView(TemplateView):
             resume.save()
             context['info_updated'] = True
         return render(request, self.template_name, context)
+
+
+class SearchView(TemplateView):
+    template_name = 'vacancies/search.html'
+
+    def get(self, request, query):
+        form = SearchForm(request.GET)
+        if form.is_valid():
+            query_string = form.cleaned_data['query']
+            vacancies = Vacancy.objects.all()
+        return render(request, self.template_name, {'form': form, 'vacancies': vacancies})
 
 
 #

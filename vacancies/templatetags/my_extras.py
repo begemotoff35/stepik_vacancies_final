@@ -31,3 +31,8 @@ def response_by_number(number, show_number=True, ):
 @register.simple_tag
 def people_by_number(number, show_number=True, ):
     return word_by_number(number, 'человек', 'человека', 'человек', show_number)
+
+
+@register.simple_tag
+def people_by_number(number, show_number=True, ):
+    return word_by_number(number, 'человек', 'человека', 'человек', show_number)

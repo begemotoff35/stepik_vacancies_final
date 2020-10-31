@@ -97,3 +97,6 @@ class ResumeEditForm(forms.ModelForm):
 
         self.fields['portfolio'].label = 'Ссылка на портфолио'
 
+
+class SearchForm(forms.Form):
+    query = forms.CharField(max_length=1000, required=False)
