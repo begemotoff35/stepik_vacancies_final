@@ -350,7 +350,10 @@ class SearchView(TemplateView):
         form = SearchForm(request.GET)
         if form.is_valid():
             query_string = form.cleaned_data['query']
-            vacancies = Vacancy.objects.all()
+            if len(query_string):
+                vacancies = Vacancy.objects.filter(title__contains=query_string).all()
+            else:
+                vacancies = None
         return render(request, self.template_name, {'form': form, 'vacancies': vacancies})
 
 

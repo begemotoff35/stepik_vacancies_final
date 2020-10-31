@@ -5,7 +5,7 @@
     <section>
       <h1 class="h1 text-center mt-5 mb-4">Поиск вакансий</h1>
       {% include 'vacancies/base_search.html' %}
-      <p class="text-center pt-1">Найдено {% vacancy_by_number vacancies|length %}</p>
+      <p class="text-center pt-1">{% if vacancies %}Найдено: {% vacancy_by_number vacancies|length %}{% else %}Ничего не найдено{% endif %}</p>
       {% include 'vacancies/base_card_vacancy.html' %}
     </section>
   </main>

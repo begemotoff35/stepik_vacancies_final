@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-12 col-md-8 col-lg-6 offset-lg-3 offset-md-2">
-      <form class="form-inline mb-3" action="{% url 'search' form.query.value|default:'ios' %}" method="get">{% csrf_token %}
+      <form class="form-inline mb-3" action="{% url 'search' form.query.value|default:'ios' %}" method="get">
         <div class="form-group col-8 col-md-10 pl-0">
           <input class="form-control w-100" type="search" placeholder="Найти работу или стажировку" aria-label="Найти работу или стажировку" name="{{ form.query.html_name }}" value="{{ form.query.value|default_if_none:'' }}">
         </div>

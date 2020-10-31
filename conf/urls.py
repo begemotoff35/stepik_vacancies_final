@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -50,6 +50,7 @@ urlpatterns = [
     path('register', views.MySignupView.as_view(), name='register'),
     path('logout', LogoutView.as_view(), {'next_page': settings.LOGOUT_REDIRECT_URL}, name='logout'),
     path('search?s=<str:query>', views.SearchView.as_view(), name='search')
+    # re_path(r'^search/$', views.SearchView.as_view(), name='search'),
 ]
 
 if settings.DEBUG:
