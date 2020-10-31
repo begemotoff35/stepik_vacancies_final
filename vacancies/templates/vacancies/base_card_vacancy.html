@@ -8,7 +8,7 @@
               <a href="{% url 'vacancy_info' vacancy_id=vacancy.id %}">
               <h2 class="h2 pb-2">{{ vacancy.title }}</h2>
               </a>
-              <p class="mb-2">{{ vacancy.specialty.title }} {{ vacancy.scills }}</p>
+              <p class="mb-2">{{ vacancy.specialty.title }} {% if vacancy.skills %} • {{ vacancy.skills }}{% endif %}</p>
               <p>От {{ vacancy.salary_min|floatformat }} до {{ vacancy.salary_max|floatformat }} руб.</p>
               <p class="text-muted pt-1">{{ vacancy.published_at|date:"d b Y" }}</p>
             </div>
