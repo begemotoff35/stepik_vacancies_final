@@ -14,6 +14,13 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='resume',
             name='specialty',
-            field=models.ForeignKey(choices=[(None, '--- Выберите специализацию ---'), ('frontend', 'Фронтенд разработка'), ('backend', 'Бэкенд разработка'), ('gamedev', 'Разработка игр'), ('devops', 'Девопс'), ('design', 'Дизайн'), ('products', 'Продукты'), ('management', 'Менеджмент'), ('testing', 'Тестирование')], max_length=10, on_delete=django.db.models.deletion.CASCADE, related_name='resumes', to='vacancies.specialty'),
+            field=models.ForeignKey(choices=[(None, '--- Выберите специализацию ---'),
+                                             ('frontend', 'Фронтенд разработка'),
+                                             ('backend', 'Бэкенд разработка'),
+                                             ('gamedev', 'Разработка игр'), ('devops', 'Девопс'), ('design', 'Дизайн'),
+                                             ('products', 'Продукты'), ('management', 'Менеджмент'),
+                                             ('testing', 'Тестирование')],
+                                    max_length=10, on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='resumes', to='vacancies.specialty'),
         ),
     ]

@@ -4,11 +4,11 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 
 from django.db.models import Count
-from django.http import Http404, HttpResponse, HttpResponseServerError
+from django.http import Http404, HttpResponse
 from django.urls import reverse
 
 from django.views.generic.base import TemplateView, View
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import AuthenticationForm
 

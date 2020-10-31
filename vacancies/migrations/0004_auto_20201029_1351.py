@@ -13,6 +13,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='specialty',
             name='code',
-            field=models.SlugField(choices=[('frontend', 'Фронтенд разработка'), ('backend', 'Бэкенд разработка'), ('gamedev', 'Разработка игр'), ('devops', 'Девопс'), ('design', 'Дизайн'), ('products', 'Продукты'), ('management', 'Менеджмент'), ('testing', 'Тестирование')], default='backend', unique=True),
+            field=models.SlugField(choices=[('frontend', 'Фронтенд разработка'), ('backend', 'Бэкенд разработка'),
+                                            ('gamedev', 'Разработка игр'), ('devops', 'Девопс'), ('design', 'Дизайн'),
+                                            ('products', 'Продукты'), ('management', 'Менеджмент'),
+                                            ('testing', 'Тестирование')],
+                                   default='backend', unique=True),
         ),
     ]
