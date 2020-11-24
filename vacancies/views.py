@@ -22,8 +22,8 @@ class MainView(TemplateView):
     def get(self, request):
         specialties_with_vacancy_count = Specialty.objects.annotate(number_of_vacancies=Count('vacancies'))
         companies_with_vacancy_count = Company.objects.annotate(number_of_vacancies=Count('vacancies'))
-        return render(request, self.template_name,
-                      {'specialties': specialties_with_vacancy_count, 'companies': companies_with_vacancy_count})
+        return self.render_to_response(
+            {'specialties': specialties_with_vacancy_count, 'companies': companies_with_vacancy_count})
 
 
 class VacanciesView(TemplateView):
